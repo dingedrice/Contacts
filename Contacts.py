@@ -355,5 +355,3 @@ def qOnuchic(traj, contacts, cutoff = 1.5):
     q0 = np.mean(d < threshold, axis = -1)
 
     return q0
-
-    
