@@ -237,7 +237,7 @@ class ContactsOnuchic(Contacts):
             sys.exit(1)
         
     def loadContacts(self, openmm_forces = None, contacts_file = None, input_distance_calc_dict = None, gro_file = None, array = np.array([])):        
-        def loadCoordinate(gro_file):
+        def import_coordinates(gro_file):
             gro = GromacsGroFile(gro_file)
             coord = gro.getPositions(asNumpy = True).value_in_unit(nanometer)
             print(f"\n\nloadContacts Note: gro file {gro_file} detected, will use the coordinates to calculate distances")
@@ -278,7 +278,7 @@ class ContactsOnuchic(Contacts):
                     print(f"\n\nloadContacts Error: gro_file and array cannot be both present")
                     sys.exit(1)
                 else:
-                    coord = loadCoordinate(gro_file)
+                    coord = import_coordinates(gro_file)
             elif array.size != 0:
                 coord = array.copy()
                 if coord.shape[1] != 3:
