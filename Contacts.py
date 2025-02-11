@@ -1,13 +1,12 @@
+import sys
+import os
+import xml.etree.ElementTree as ET
+from collections.abc import Iterable
+
+import numpy as np
 from openmm.app import *
 from openmm import *
 from openmm.unit import *
-
-from OpenSMOG.OpenSMOG import SBM
-
-import sys
-import os
-import numpy as np
-from collections.abc import Iterable
 
 def _isarrayint(index):
     if isinstance(index, (list, tuple)) and all(isinstance(i, int) for i in index):
@@ -101,18 +100,18 @@ class Contacts():
         self._distance[index] = distance
 
 class ContactsOnuchic(Contacts):
-    def _loadContacts_openmm(self, openmm_forces, input_distance_calc_dict):
+    def _calc_d(distance_function, distance_params):
+        try:
+            d = distance_function(*distance_params)
+            return d
+        except:
+            d = None
+            print(f"\n\nloadContacts Error: distance calculation function {distance_function} does not match the parameters {distance_params}")
+            sys.exit(1)
+
+    def _loadContacts_openmm(self, openmm_forces, distance_calc_dict):
         if not isinstance(openmm_forces, Iterable):
             openmm_forces = (openmm_forces, )
-
-        # map Openmm energy functions to distance calculation functions
-        distance_calc_dict = {
-            'A/r^12-B/r^6': lambda A, B: (2*A/B)**(1/6),
-            'A/r^12-B/r^10': lambda A, B: np.sqrt(6/5*A/B),
-            '-C/r^6+A/r^12': lambda C, A: (2*A/C)**(1/6)
-            }
-        if input_distance_calc_dict != None:
-            distance_calc_dict.update(input_distance_calc_dict)
 
         for openmm_force in openmm_forces:
             if not isinstance(openmm_force, CustomBondForce):
@@ -128,36 +127,81 @@ class ContactsOnuchic(Contacts):
 
             for i in range(openmm_force.getNumBonds()):
                 atom1, atom2, distance_params = openmm_force.getBondParameters(i)
-                try:
-                    d = distance_function(*distance_params)
-                except:
-                    d = None
-                    print(f"\n\nloadContacts Error: distance calculation function {distance_function} does not match the parameters {distance_params}")
-                    sys.exit(1)
+                d = self._calc_d(distance_function, distance_params)
                 self.addContacts(atom1, atom2, d)
 
-    def _loadContacts_file(self, contacts_file, input_distance_calc_dict, coord):
-        def ignore_dict_note(input_distance_calc_dict):
-            if input_distance_calc_dict != None:
+    def _loadContacts_file(self, contacts_file, distance_calc_dict, coord, dict_appended = False):
+        def ignore_dict_note(dict_appended):
+            if dict_appended:
                 print(f"\n\nloadContacts Note: input_distance_calc_dict will be ignored")
+
+        # Modified from "import_xml2OpenSMOG" in OpenSMOG package by Antonio Oliveira 
+        def import_xml_contacts(contacts_file):
+            XML_potential = ET.parse(contacts_file)
+            root = XML_potential.getroot()
+            ## Contacts 
+            Force_Names=[]
+            Expression=[]
+            Parameters=[]
+            Pairs=[]
+            if root.find('contacts') == None:
+                print(f"\n\naddContacts error: did not find any contacts in the xml contacts_file {contacts_file}")
+                sys.exit(1)
+            else:
+                contacts_xml=root.find('contacts')
+                for i in range(len(contacts_xml)):
+                    for name in contacts_xml[i].iter('contacts_type'):
+                        if name.attrib['name'] in Force_Names:
+                            print(f"\n\naddContacts error: contacts_type name \"{name.attrib['name']}\" is used more than once in the xml file. The name of each contacts_type must be unique.")
+                        Force_Names.append(name.attrib['name'])
+
+                    for expr in contacts_xml[i].iter('expression'):
+                        Expression.append(expr.attrib['expr'])
+                        
+                    internal_Param=[]
+                    for par in contacts_xml[i].iter('parameter'):
+                        internal_Param.append(par.text)
+                    Parameters.append(internal_Param)
+
+                    internal_Pairs=[]
+                    for atompairs in contacts_xml[i].iter('interaction'):
+                            internal_Pairs.append(atompairs.attrib)
+                    Pairs.append(internal_Pairs)
+
+                forces = {}
+                for n in range(len(Force_Names)):
+                    forces[Force_Names[n]] = [Expression[n], Parameters[n], Pairs[n]]
+            return forces
 
         if contacts_file.endswith('.xml'):
             # Construct forces from xml file 
-            tmp = SBM(name='tmp',time_step=0.002,collision_rate=1.0,r_cutoff=0.65,temperature=0.5)
-            tmp.system = System()
-            tmp.loadXml(contacts_file)
-            if not tmp.contacts_present:
-                print(f"\n\nloadContacts Error: did find any contacts in the xml contacts_file {contacts_file}")
-                sys.exit(1)
-            forces = [tmp.forcesDict[i] for i in tmp.contacts]
+            forces = import_xml_contacts(contacts_file)
 
             if coord.size == 0:
-                self._loadContacts_openmm(forces, input_distance_calc_dict)
+                for i in forces:
+                    data = forces[i]
+                    # data[0]: energy function
+                    # data[1]: parameter names
+                    # date[2]: parameters
+                    distance_function = distance_calc_dict[data[0]]
+                    param_name = [par for par in data[1]]            
+
+                    for iteraction in data[2]:
+                        atom1 = int(iteraction['i'])-1 
+                        atom2 = int(iteraction['j'])-1
+                        distance_params = [float(iteraction[k]) for k in param_name]
+                        d = self._calc_d(distance_function, *distance_params)
+                        self.addContacts(atom1, atom2, d)
             else:
-                ignore_dict_note(input_distance_calc_dict)
-                for force in forces:
-                    for i in range(force.getNumBonds()):
-                        atom1, atom2, _ = force.getBondParameters(i)
+                ignore_dict_note(dict_appended)
+                for i in forces:
+                    data = forces[i]
+                    # data[0]: energy function
+                    # data[1]: parameter names
+                    # date[2]: parameters
+                    for iteraction in data[2]:
+                        atom1 = int(iteraction['i'])-1 
+                        atom2 = int(iteraction['j'])-1
                         d = np.linalg.norm(coord[atom1] - coord[atom2])
                         self.addContacts(atom1, atom2, d)
         elif contacts_file.endswith('.top'):
@@ -166,13 +210,13 @@ class ContactsOnuchic(Contacts):
                 system = top.createSystem()
                 forces = [force for force in system.getForces() if isinstance(force, CustomBondForce)]
                 print(f"\n\nloadContacts Note: Lennard-Jones potential is assumed")
-                ignore_dict_note(input_distance_calc_dict)
-                self._loadContacts_openmm(forces, input_distance_calc_dict)
+                ignore_dict_note(dict_appended)
+                self._loadContacts_openmm(forces, distance_calc_dict)
             else:
                 # When coordinates are available, openmm tools are not used
                 # Thw reason is that we only need atom pairs and openmm only supports Lennard-Jones potential so that the loading may fail
                 print(f"\n\nloadContacts Note: top file {contacts_file} detected, will read contacts from [ exclusions ]")
-                ignore_dict_note(input_distance_calc_dict)
+                ignore_dict_note(dict_appended)
 
                 with open(contacts_file, 'r') as read_obj:
                     exclusions_section = False
@@ -202,6 +246,16 @@ class ContactsOnuchic(Contacts):
         coord = np.array([])
         array = np.array(array)
 
+        # map Openmm energy functions to distance calculation functions
+        distance_calc_dict = {
+            'A/r^12-B/r^6': lambda A, B: (2*A/B)**(1/6),
+            'A/r^12-B/r^10': lambda A, B: np.sqrt(6/5*A/B),
+            '-C/r^6+A/r^12': lambda C, A: (2*A/C)**(1/6)
+            }
+        if input_distance_calc_dict != None:
+            dict_appended = True
+            distance_calc_dict.update(input_distance_calc_dict)
+
         if openmm_forces != None:
             if contacts_file != None:
                 print(f"\n\nloadContacts Note: openmm_forces detected, will ignore contacts_file {contacts_file}")
@@ -210,7 +264,7 @@ class ContactsOnuchic(Contacts):
             if array.size != 0:
                 print(f"\n\nloadContacts Note: openmm_forces detected, will ignore array {str(array)}")
 
-            self._loadContacts_openmm(openmm_forces, input_distance_calc_dict)
+            self._loadContacts_openmm(openmm_forces, distance_calc_dict)
         elif contacts_file != None:
             if not os.path.exists(contacts_file):
                 print(f"\n\nloadContacts Error: contacts_file {contacts_file} does not exist")
@@ -232,7 +286,7 @@ class ContactsOnuchic(Contacts):
                     sys.exit(1)
                 print(f"\n\nloadContacts WARNING: it could be dangerous to use array, and it is your responsibility to ensure that the coordinates are in the unit of nm and match the contact_file")
                 
-            self._loadContacts_file(contacts_file, input_distance_calc_dict, coord)
+            self._loadContacts_file(contacts_file, distance_calc_dict, coord, dict_appended)
         else:
             print(f"\n\nloadContacts Error: openmm_forces and contacts_file cannot be both absent")
             sys.exit(1)
