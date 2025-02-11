@@ -9,17 +9,17 @@ The `Contacts` class is used to store and manipulate contact information for a s
 
 ### Methods
 
-- `getNumContacts(self)`: Returns the number of contacts.   
-- `getContact(self, index)`: Returns the contact at the specified index.   
-- `getAtom1Array(self)`: Returns a copy of the array of the first atom indices.   
-- `getAtom2Array(self)`: Returns a copy of the array of the second atom indices.   
-- `getDistanceArray(self)`: Returns a copy of the array of distances.   
-- `rescaledDistances(self, scale)`: Returns the distances rescaled by the specified scale.   
-- `getIndices(self)`: Returns all the atom index pairs (N x 2).   
-- `toArray(self)`: Returns an array of atom index pairs and distances (N x 3).   
-- `addContacts(self, atom1, atom2, distance)`: Adds contacts to the arrays.   
-- `removeContacts(self, index)`: Removes contacts at the specified index.   
-- `setContacts(self, index, atom1, atom2, distance)`: Sets the contacts at the specified index.   
+- `getNumContacts(self)`: Returns the number of contacts.
+- `getContact(self, index)`: Returns the contact at the specified index.
+- `getAtom1Array(self)`: Returns a copy of the array of the first atom indices.
+- `getAtom2Array(self)`: Returns a copy of the array of the second atom indices.
+- `getDistanceArray(self)`: Returns a copy of the array of distances.
+- `rescaledDistances(self, scale)`: Returns the distances rescaled by the specified scale.
+- `getIndices(self)`: Returns all the atom index pairs (N x 2).
+- `toArray(self)`: Returns an array of atom index pairs and distances (N x 3).
+- `addContacts(self, atom1, atom2, distance)`: Adds contacts to the arrays.
+- `removeContacts(self, index)`: Removes contacts at the specified index.
+- `setContacts(self, index, atom1, atom2, distance)`: Sets the contacts at the specified index.
 
 ## The `ContactsOnuchic` class
 
@@ -33,11 +33,12 @@ The class provides methods to load contacts from OpenMM forces or files.
 
     #### Arguments
 
-    - `openmm_forces`: (Optional) OpenMM force(s) containing contact information (CustomBondForce style). Either this argument or `contacts_file` should be provided.   
-    - `contacts_file`: (Optional) A OpenSMOG XML or GROMACS TOP file containing contact information. When the file is a GROMACS TOP file, only Lennard-Jones potential is supported for distance calculation unless the GRO file is provided. Either this argument or `openmm_forces` should be provided.   
-    - `input_distance_calc_dict`: (Optional) A dictionary containing the parameters for distance calculation when OpenMM forces are provided. The key should be the energy format in OpenMM and the value should be the function to calculate the distances from OpenMM forces parameters based on the energy function. e.g. `{'A/r^12-B/r^6': lambda A, B: (2*A/B)**(1/6)}`. Lennard-Jones potential for all-atom structure based model and "10-12" force for C-alpha structure based model are supported by default.   
-    - `gro_file`: (Optional) A GRO file containing the coordinates of the system. When the file is provided, the distances are calculated based on the coordinates in the GRO file. Can not be used with `array`.   
-    - `array`: (Optional) An array containing the coordinates. Can not be used with `gro_file`.   
+    - `openmm_forces`: (Optional) OpenMM force(s) containing contact information (CustomBondForce style). Either this argument or `contacts_file` should be provided.
+    - `contacts_file`: (Optional) A OpenSMOG XML or GROMACS TOP file containing contact information. When the file is a GROMACS TOP file, only Lennard-Jones potential is supported for distance calculation unless the GRO file is provided. Either this argument or `openmm_forces` should be provided.
+    - `input_distance_calc_dict`: (Optional) A python dictionary containing the information for distance calculation. The key should be the energy format in OpenMM style and the value should be the function to calculate the distances from OpenMM forces parameters. Lennard-Jones potential for all-atom structure based model and "10-12" force for C-alpha structure based model are supported by default.
+        - e.g. `{'A/r^12-B/r^6': lambda A, B: (2*A/B)**(1/6)}`
+    - `gro_file`: (Optional) A GRO file containing the coordinates of the system. When the file is provided, the distances are calculated based on the coordinates in the GRO file. Can not be used with `array`.
+    - `array`: (Optional) An array containing the coordinates. Can not be used with `gro_file`.
 
     #### Example
 
@@ -60,10 +61,10 @@ The `QOnuchicReporter` can be applied in an OpenMM simulation to report the frac
 
 ### Arguments
 
-- `reportInterval`: The interval at which to report the fraction of native contacts (Q).   
-- `contacts`: A `Contacts` object containing all the contacts of the system.   
-- `cutoff`: The cutoff distance. Within cutoff*original_distance, the contact is considered formed.   
-- `Qi`: Whether to report the formation of every single contacts (Qi) or only report the fraction of native contacts globally (Q).   
+- `reportInterval`: The interval at which to report the fraction of native contacts (Q).
+- `contacts`: A `Contacts` object containing all the contacts of the system.
+- `cutoff`: The cutoff distance. Within cutoff*original_distance, the contact is considered formed.
+- `Qi`: Whether to report the formation of every single contacts (Qi) or only report the fraction of native contacts globally (Q).
 
 ## The `qOnuchic` function
 
@@ -73,9 +74,9 @@ The `qOnuchic` function calculates the fraction of native contacts (Q) for a giv
 
 ### Arguments
 
-- `traj`: An `md.Trajectory` object representing the trajectory.   
-- `contacts`: A `Contacts` object representing the contacts.   
-- `cutoff`: The cutoff distance. Within cutoff*original_distance, the contact is considered formed.   
+- `traj`: An `md.Trajectory` object representing the trajectory.
+- `contacts`: A `Contacts` object representing the contacts.
+- `cutoff`: The cutoff distance. Within cutoff*original_distance, the contact is considered formed.
 
 ### Returns
 
