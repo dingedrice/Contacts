@@ -69,10 +69,10 @@ class Contacts():
             pass
         elif _isarrayint(atom1) and _isarrayint(atom2):
             if len(atom1) != len(atom2) or len(atom1) != len(distance):
-                print(f"addContacts Error: atom1 (len = {len(atom1)}), atom2 (len = {len(atom2)}) and distance (len = {len(atom2)}) must have the same length")
+                print(f"\n\naddContacts Error: atom1 (len = {len(atom1)}), atom2 (len = {len(atom2)}) and distance (len = {len(atom2)}) must have the same length")
                 sys.exit(1)
         else:
-            print(f"addContacts Error: atom1 {atom1} and atom2 {atom2} must be integers or arrays of integers")
+            print(f"\n\naddContacts Error: atom1 {atom1} and atom2 {atom2} must be integers or arrays of integers")
             sys.exit(1)
 
         self._atom1 = np.append(self._atom1, atom1)
@@ -89,10 +89,10 @@ class Contacts():
             pass
         elif _isarrayint(atom1) and _isarrayint(atom2):
             if len(index) != len(atom1) or len(index) != len(atom2) or len(index) != len(distance):
-                print(f"setContacts Error: index (len = {len(index)}), atom1 (len = {len(atom1)}), atom2 (len = {len(atom2)}) and distance (len = {len(distance)}) must have the same length")
+                print(f"\n\nsetContacts Error: index (len = {len(index)}), atom1 (len = {len(atom1)}), atom2 (len = {len(atom2)}) and distance (len = {len(distance)}) must have the same length")
                 sys.exit(1)
         else:
-            print(f"setContacts Error: atom1 {atom1} and atom2 {atom2} must be integers or arrays of integers")
+            print(f"\n\nsetContacts Error: atom1 {atom1} and atom2 {atom2} must be integers or arrays of integers")
             sys.exit(1)
 
         self._atom1[index] = atom1
