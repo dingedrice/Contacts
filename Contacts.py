@@ -69,7 +69,7 @@ class Contacts():
             pass
         elif _isarrayint(atom1) and _isarrayint(atom2):
             if len(atom1) != len(atom2) or len(atom1) != len(distance):
-                print(f"\n\naddContacts Error: atom1 (len = {len(atom1)}), atom2 (len = {len(atom2)}) and distance (len = {len(atom2)}) must have the same length")
+                print(f"\n\naddContacts Error: atom1 (len = {len(atom1)}), atom2 (len = {len(atom2)}) and distance (len = {len(distance)}) must have the same length")
                 sys.exit(1)
         else:
             print(f"\n\naddContacts Error: atom1 {atom1} and atom2 {atom2} must be integers or arrays of integers")
@@ -100,7 +100,7 @@ class Contacts():
         self._distance[index] = distance
 
 class ContactsOnuchic(Contacts):
-    def _calc_d(distance_function, distance_params):
+    def _calc_d(self, distance_function, *distance_params):
         try:
             d = distance_function(*distance_params)
             return d
@@ -122,12 +122,12 @@ class ContactsOnuchic(Contacts):
             try:
                 distance_function = distance_calc_dict[energy]
             except:
-                print(f"\n\nloadContacts Error: energy function {openmm_force.getEnergyFunction()} is not supported, please provide a python dictionary mapping the energy function to the distance calculation for the calculation of distances with the force parameters")
+                print(f"\n\nloadContacts Error: energy function {energy} is not supported, please provide a python dictionary mapping the energy function to the distance calculation for the calculation of distances with the force parameters")
                 sys.exit(1)
 
             for i in range(openmm_force.getNumBonds()):
                 atom1, atom2, distance_params = openmm_force.getBondParameters(i)
-                d = self._calc_d(distance_function, distance_params)
+                d = self._calc_d(distance_function, *distance_params)
                 self.addContacts(atom1, atom2, d)
 
     def _loadContacts_file(self, contacts_file, distance_calc_dict, coord, dict_appended = False):
@@ -245,6 +245,7 @@ class ContactsOnuchic(Contacts):
         
         coord = np.array([])
         array = np.array(array)
+        dict_appended = False
 
         # map Openmm energy functions to distance calculation functions
         distance_calc_dict = {
