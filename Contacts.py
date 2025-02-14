@@ -226,6 +226,7 @@ class ContactsOnuchic(Contacts):
                 print(f"\n\nloadContacts Note: top file {contacts_file} detected, will read contacts from [ exclusions ]")
                 ignore_dict_note(dict_appended)
 
+                # Modified from Vinicius Contessoto's code
                 with open(contacts_file, 'r') as read_obj:
                     exclusions_section = False
                     for line in read_obj:
