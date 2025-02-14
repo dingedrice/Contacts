@@ -1,5 +1,5 @@
 # Contacts
-This tool reads structure based model contact content and calculates the fraction of native contacts (Q) either during an OpenMM simulation or from a simulation trajectory.
+This tool reads structure based model contact content and calculates the fraction of native contacts (Q) either during an OpenMM simulation or from a simulation trajectory. An example of using this tool to write Q_Onuchic during an OpenSMOG simulation is provided in the `example` directory.
 
 OpenMM package (version 7.7 or higher) is required to run the code.
 
