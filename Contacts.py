@@ -30,6 +30,7 @@ class _Contact():
 
 class Contacts():
     def __init__(self, Nbits = 32):
+        self._Nbits = Nbits
         self._atom1 = np.array([], dtype=f"int{Nbits}")
         self._atom2 = np.array([], dtype=f"int{Nbits}")
         self._distance = np.array([], dtype=f"float{Nbits}")
@@ -46,6 +47,13 @@ class Contacts():
             sys.exit(1)
         return _Contact(self._atom1[index], self._atom2[index], self._distance[index])
     
+    def getSubContacts(self, indices):
+        sub_contacts = Contacts(Nbits = self._Nbits)
+        sub_contacts._atom1 = self._atom1[indices]
+        sub_contacts._atom2 = self._atom2[indices]
+        sub_contacts._distance = self._distance[indices]
+        return sub_contacts
+
     def getAtom1Array(self):
         return self._atom1.copy()
     
@@ -79,25 +87,25 @@ class Contacts():
         self._atom2 = np.append(self._atom2, atom2)
         self._distance = np.append(self._distance, distance)
 
-    def removeContacts(self, index):
-        self._atom1 = np.delete(self._atom1, index)
-        self._atom2 = np.delete(self._atom2, index)
-        self._distance = np.delete(self._distance, index)
+    def removeContacts(self, indices):
+        self._atom1 = np.delete(self._atom1, indices)
+        self._atom2 = np.delete(self._atom2, indices)
+        self._distance = np.delete(self._distance, indices)
 
-    def setContacts(self, index, atom1, atom2, distance):
-        if isinstance(index, int) and isinstance(atom1, int) and isinstance(atom2, int) and isinstance(distance, (int, float)):
+    def setContacts(self, indices, atom1, atom2, distance):
+        if isinstance(indices, int) and isinstance(atom1, int) and isinstance(atom2, int) and isinstance(distance, (int, float)):
             pass
         elif _isarrayint(atom1) and _isarrayint(atom2):
-            if len(index) != len(atom1) or len(index) != len(atom2) or len(index) != len(distance):
-                print(f"\n\nsetContacts Error: index (len = {len(index)}), atom1 (len = {len(atom1)}), atom2 (len = {len(atom2)}) and distance (len = {len(distance)}) must have the same length")
+            if len(indices) != len(atom1) or len(indices) != len(atom2) or len(indices) != len(distance):
+                print(f"\n\nsetContacts Error: indices (len = {len(indices)}), atom1 (len = {len(atom1)}), atom2 (len = {len(atom2)}) and distance (len = {len(distance)}) must have the same length")
                 sys.exit(1)
         else:
             print(f"\n\nsetContacts Error: atom1 {atom1} and atom2 {atom2} must be integers or arrays of integers")
             sys.exit(1)
 
-        self._atom1[index] = atom1
-        self._atom2[index] = atom2
-        self._distance[index] = distance
+        self._atom1[indices] = atom1
+        self._atom2[indices] = atom2
+        self._distance[indices] = distance
 
 class ContactsOnuchic(Contacts):
     def _calc_d(self, distance_function, *distance_params):

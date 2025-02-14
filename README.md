@@ -11,6 +11,7 @@ The `Contacts` class is used to store and manipulate contact information for a s
 
 - `getNumContacts(self)`: Returns the number of contacts.
 - `getContact(self, index)`: Returns the contact at the specified index.
+- `getSubContacts(self, indices)`: Returns a new Contacts object with the contacts at the specified indices.
 - `getAtom1Array(self)`: Returns a copy of the array of the first atom indices.
 - `getAtom2Array(self)`: Returns a copy of the array of the second atom indices.
 - `getDistanceArray(self)`: Returns a copy of the array of distances.
@@ -18,8 +19,8 @@ The `Contacts` class is used to store and manipulate contact information for a s
 - `getIndices(self)`: Returns all the atom index pairs (N x 2).
 - `toArray(self)`: Returns an array of atom index pairs and distances (N x 3).
 - `addContacts(self, atom1, atom2, distance)`: Adds contacts to the arrays.
-- `removeContacts(self, index)`: Removes contacts at the specified index.
-- `setContacts(self, index, atom1, atom2, distance)`: Sets the contacts at the specified index.
+- `removeContacts(self, indices)`: Removes contacts at the specified indices.
+- `setContacts(self, indices, atom1, atom2, distance)`: Sets the contacts at the specified indices.
 
 ## The `ContactsOnuchic` class
 
