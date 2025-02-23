@@ -121,6 +121,10 @@ class ContactsOnuchic(Contacts):
         if not isinstance(openmm_forces, Iterable):
             openmm_forces = (openmm_forces, )
 
+        all_atom1 = []
+        all_atom2 = []
+        all_distances = []
+
         for openmm_force in openmm_forces:
             if not isinstance(openmm_force, CustomBondForce):
                 print(f"\n\nloadContacts Error: openmm_forces contains not only CustomBondForce: {openmm_force.getName()}")
@@ -136,7 +140,10 @@ class ContactsOnuchic(Contacts):
             for i in range(openmm_force.getNumBonds()):
                 atom1, atom2, distance_params = openmm_force.getBondParameters(i)
                 d = self._calc_d(distance_function, *distance_params)
-                self.addContacts(atom1, atom2, d)
+                all_atom1.append(atom1)
+                all_atom2.append(atom2)
+                all_distances.append(d)
+        self.addContacts(all_atom1, all_atom2, all_distances)
 
     def _loadContacts_file(self, contacts_file, distance_calc_dict, coord, dict_appended = False):
         def ignore_dict_note(dict_appended):
@@ -181,6 +188,10 @@ class ContactsOnuchic(Contacts):
                     forces[Force_Names[n]] = [Expression[n], Parameters[n], Pairs[n]]
             return forces
 
+        all_atom1 = []
+        all_atom2 = []
+        all_distances = []
+
         if contacts_file.endswith('.xml'):
             # Construct forces from xml file 
             forces = import_xml_contacts(contacts_file)
@@ -199,7 +210,9 @@ class ContactsOnuchic(Contacts):
                         atom2 = int(iteraction['j'])-1
                         distance_params = [float(iteraction[k]) for k in param_name]
                         d = self._calc_d(distance_function, *distance_params)
-                        self.addContacts(atom1, atom2, d)
+                        all_atom1.append(atom1)
+                        all_atom2.append(atom2)
+                        all_distances.append(d)
             else:
                 ignore_dict_note(dict_appended)
                 for i in forces:
@@ -211,7 +224,10 @@ class ContactsOnuchic(Contacts):
                         atom1 = int(iteraction['i'])-1 
                         atom2 = int(iteraction['j'])-1
                         d = np.linalg.norm(coord[atom1] - coord[atom2])
-                        self.addContacts(atom1, atom2, d)
+                        all_atom1.append(atom1)
+                        all_atom2.append(atom2)
+                        all_distances.append(d)
+            self.addContacts(all_atom1, all_atom2, all_distances)
         elif contacts_file.endswith('.top'):
             if coord.size == 0:
                 top = GromacsTopFile(contacts_file)
@@ -238,9 +254,12 @@ class ContactsOnuchic(Contacts):
                             try:
                                 atom1, atom2 = [int(i)-1 for i in line.split()]               
                                 d = np.linalg.norm(coord[atom1] - coord[atom2])  
-                                self.addContacts(atom1, atom2, d)
+                                all_atom1.append(atom1)
+                                all_atom2.append(atom2)
+                                all_distances.append(d)
                             except:
                                 pass
+                self.addContacts(all_atom1, all_atom2, all_distances)
         else:
             print(f"\n\nloadContacts Error: contacts_file {contacts_file} must be a xml or top file")
             sys.exit(1)
