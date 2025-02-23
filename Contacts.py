@@ -79,6 +79,8 @@ class Contacts():
             if len(atom1) != len(atom2) or len(atom1) != len(distance):
                 print(f"\n\naddContacts Error: atom1 (len = {len(atom1)}), atom2 (len = {len(atom2)}) and distance (len = {len(distance)}) must have the same length")
                 sys.exit(1)
+            elif len(atom1) == 0:
+                return
         else:
             print(f"\n\naddContacts Error: atom1 {atom1} and atom2 {atom2} must be integers or arrays of integers")
             sys.exit(1)
