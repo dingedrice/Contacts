@@ -41,7 +41,7 @@ class Contacts():
         return len(self._atom1)
 
     def getContact(self, index):
-        if not isinstance(index, int):
+        if not isinstance(index, (int, np.integer)):
             print(f"\n\ngetContact Error: index must be an integer")
             sys.exit(1)
         return _Contact(self._atom1[index], self._atom2[index], self._distance[index])
@@ -69,7 +69,7 @@ class Contacts():
         return np.column_stack((self._atom1, self._atom2))
     
     def addContacts(self, atom1, atom2, distance):
-        if isinstance(atom1, int) and isinstance(atom2, int) and isinstance(distance, (int, float)):
+        if isinstance(atom1, (int, np.integer)) and isinstance(atom2, (int, np.integer)) and isinstance(distance, (int, float, np.integer)):
             pass
         elif _isarrayint(atom1) and _isarrayint(atom2):
             if len(atom1) != len(atom2) or len(atom1) != len(distance):
@@ -91,7 +91,7 @@ class Contacts():
         self._distance = np.delete(self._distance, indices)
 
     def setContacts(self, indices, atom1, atom2, distance):
-        if isinstance(indices, int) and isinstance(atom1, int) and isinstance(atom2, int) and isinstance(distance, (int, float)):
+        if isinstance(indices, (int, np.integer)) and isinstance(atom1, (int, np.integer)) and isinstance(atom2, (int, np.integer)) and isinstance(distance, (int, float, np.integer)):
             pass
         elif _isarrayint(atom1) and _isarrayint(atom2):
             if len(indices) != len(atom1) or len(indices) != len(atom2) or len(indices) != len(distance):
