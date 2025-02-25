@@ -29,11 +29,10 @@ class _Contact():
         return self.__str__()
 
 class Contacts():
-    def __init__(self, Nbits = 32):
-        self._Nbits = Nbits
-        self._atom1 = np.array([], dtype=f"int{Nbits}")
-        self._atom2 = np.array([], dtype=f"int{Nbits}")
-        self._distance = np.array([], dtype=f"float{Nbits}")
+    def __init__(self):
+        self._atom1 = np.array([], dtype=int)
+        self._atom2 = np.array([], dtype=int)
+        self._distance = np.array([], dtype=float)
 
     def __len__(self):
         return len(self._atom1)
@@ -48,7 +47,7 @@ class Contacts():
         return _Contact(self._atom1[index], self._atom2[index], self._distance[index])
     
     def getSubContacts(self, indices):
-        sub_contacts = Contacts(Nbits = self._Nbits)
+        sub_contacts = Contacts()
         sub_contacts._atom1 = self._atom1[indices]
         sub_contacts._atom2 = self._atom2[indices]
         sub_contacts._distance = self._distance[indices]
@@ -67,10 +66,7 @@ class Contacts():
         return scale*self._distance
     
     def getIndices(self):
-        return np.array([self._atom1, self._atom2]).T
-
-    def toArray(self):
-        return np.array([self._atom1, self._atom2, self._distance]).T
+        return np.column_stack((self._atom1, self._atom2))
     
     def addContacts(self, atom1, atom2, distance):
         if isinstance(atom1, int) and isinstance(atom2, int) and isinstance(distance, (int, float)):
