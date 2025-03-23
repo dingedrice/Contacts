@@ -52,6 +52,15 @@ class Contacts():
         sub_contacts._atom2 = self._atom2[indices]
         sub_contacts._distance = self._distance[indices]
         return sub_contacts
+    
+    def getContactsByAtomGroups(self, atom_group1, atom_group2):
+        print(f"\n\ngetContactsByAtomGroups Note: Atom indices start from 0")
+        if not _isarrayint(atom_group1) or not _isarrayint(atom_group2):
+            print(f"\n\ngetContactsByAtomGroups Error: atom_group1 and atom_group2 must be arrays of integers")
+            sys.exit(1)
+        indices = (np.isin(self._atom1, atom_group1) & np.isin(self._atom2, atom_group2)) | \
+                    (np.isin(self._atom1, atom_group2) & np.isin(self._atom2, atom_group1))
+        return self.getSubContacts(indices)
 
     def getAtom1Array(self):
         return self._atom1.copy()
