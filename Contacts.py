@@ -11,6 +11,8 @@ from openmm.unit import *
 def _isarrayint(index):
     if isinstance(index, (list, tuple)) and all(isinstance(i, int) for i in index):
         return True
+    elif isinstance(index, (list, tuple)) and all(isinstance(i, np.integer) for i in index):
+        return True
     elif isinstance(index, np.ndarray) and np.issubdtype(index.dtype, np.integer):
         return True
     else:
