@@ -173,22 +173,22 @@ class ContactsOnuchic(Contacts):
                 sys.exit(1)
             else:
                 contacts_xml=root.find('contacts')
-                for i in range(len(contacts_xml)):
-                    for name in contacts_xml[i].iter('contacts_type'):
-                        if name.attrib['name'] in Force_Names:
-                            print(f"\n\naddContacts error: contacts_type name \"{name.attrib['name']}\" is used more than once in the xml file. The name of each contacts_type must be unique.")
-                        Force_Names.append(name.attrib['name'])
+                for contact_type in contacts_xml:
+                    name = contact_type.get('name')
+                    if name in Force_Names:
+                        print(f"\n\naddContacts error: contacts_type name \"{name}\" is used more than once in the xml file. The name of each contacts_type must be unique.")
+                    Force_Names.append(name)
 
-                    for expr in contacts_xml[i].iter('expression'):
+                    for expr in contact_type.iter('expression'):
                         Expression.append(expr.attrib['expr'])
                         
                     internal_Param=[]
-                    for par in contacts_xml[i].iter('parameter'):
+                    for par in contact_type.iter('parameter'):
                         internal_Param.append(par.text)
                     Parameters.append(internal_Param)
 
                     internal_Pairs=[]
-                    for atompairs in contacts_xml[i].iter('interaction'):
+                    for atompairs in contact_type.iter('interaction'):
                             internal_Pairs.append(atompairs.attrib)
                     Pairs.append(internal_Pairs)
 
