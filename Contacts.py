@@ -1,12 +1,24 @@
 import sys
 import os
-import xml.etree.ElementTree as ET
 from collections.abc import Iterable
 
 import numpy as np
-from openmm.app import *
-from openmm import *
-from openmm.unit import *
+
+# Safely handle OpenMM imports to allow standalone usage of Contacts()
+# Obtained from Gemini
+try:
+    from openmm.app import *
+    from openmm import *
+    from openmm.unit import *
+    OPENMM_AVAILABLE = True
+except ImportError:
+    OPENMM_AVAILABLE = False
+    # Fallback placeholders to prevent definition or inheritance NameErrors
+    class StateDataReporter: pass
+    class CustomBondForce: pass
+    GromacsTopFile = None
+    GromacsGroFile = None
+    nanometer = None
 
 def _isarrayint(index):
     if isinstance(index, (list, tuple)) and all(isinstance(i, int) for i in index):
@@ -127,6 +139,10 @@ class ContactsOnuchic(Contacts):
             sys.exit(1)
 
     def _loadContacts_openmm(self, openmm_forces, distance_calc_dict):
+        if not OPENMM_AVAILABLE:
+            print(f"\n\nloadContacts Error: OpenMM is not installed but required to load openmm_forces.")
+            sys.exit(1)
+
         if not isinstance(openmm_forces, Iterable):
             openmm_forces = (openmm_forces, )
 
@@ -161,6 +177,7 @@ class ContactsOnuchic(Contacts):
 
         # Modified from "import_xml2OpenSMOG" in OpenSMOG package by Antonio Oliveira 
         def import_xml_contacts(contacts_file):
+            import xml.etree.ElementTree as ET
             XML_potential = ET.parse(contacts_file)
             root = XML_potential.getroot()
             ## Contacts 
@@ -239,6 +256,9 @@ class ContactsOnuchic(Contacts):
             self.addContacts(all_atom1, all_atom2, all_distances)
         elif contacts_file.endswith('.top'):
             if coord.size == 0:
+                if not OPENMM_AVAILABLE:
+                    print(f"\n\nloadContacts Error: OpenMM is not installed but required to process top file without coordinates.")
+                    sys.exit(1)
                 top = GromacsTopFile(contacts_file)
                 system = top.createSystem()
                 forces = [force for force in system.getForces() if isinstance(force, CustomBondForce)]
@@ -275,6 +295,9 @@ class ContactsOnuchic(Contacts):
         
     def loadContacts(self, openmm_forces = None, contacts_file = None, input_distance_calc_dict = None, gro_file = None, array = np.array([])):        
         def import_coordinates(gro_file):
+            if not OPENMM_AVAILABLE:
+                print(f"\n\nloadContacts Error: OpenMM is not installed but required to read gro_file.")
+                sys.exit(1)
             gro = GromacsGroFile(gro_file)
             coord = gro.getPositions(asNumpy = True).value_in_unit(nanometer)
             print(f"\n\nloadContacts Note: gro file {gro_file} detected, will use the coordinates to calculate distances")
@@ -331,6 +354,9 @@ class ContactsOnuchic(Contacts):
 
 class QOnuchicReporter(StateDataReporter):
     def __init__(self, file, reportInterval, contacts, cutoff = 1.5, Qi = False, **kwargs):
+        if not OPENMM_AVAILABLE:
+            print("\n\nQOnuchicReporter Error: OpenMM is not installed but required for QOnuchicReporter.")
+            sys.exit(1)
         if not isinstance(contacts, Contacts):
             print(f"\n\nQOnuchicReporter Error: contacts must be of type Contacts")
             sys.exit(1)
