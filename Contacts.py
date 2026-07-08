@@ -267,7 +267,7 @@ class ContactsOnuchic(Contacts):
                 self._loadContacts_openmm(forces, distance_calc_dict)
             else:
                 # When coordinates are available, openmm tools are not used
-                # Thw reason is that we only need atom pairs and openmm only supports Lennard-Jones potential so that the loading may fail
+                # The reason is that we only need atom pairs and openmm only supports Lennard-Jones potential so that the loading may fail
                 print(f"\n\nloadContacts Note: top file {contacts_file} detected, will read contacts from [ exclusions ]")
                 ignore_dict_note(dict_appended)
 
